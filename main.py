@@ -29,7 +29,7 @@ def graficar():
     # Convierte string en datetime
     xdat = [datetime.strptime(d, "%Y-%m-%d") for d in dias]
 
-    ydat= archivo['Confirmados'].values
+    ydat= archivo['Delta_Confirmados'].values
     
     # Dibuja
     fig, ax = plt.subplots()
@@ -66,12 +66,43 @@ def graficar():
     
     plt.savefig("test.png")
     
-def agregar_daily():
+    
+def obtener_daily():
     header = {
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.75 Safari/537.36",
             "X-Requested-With": "XMLHttpRequest"
             }
     res = requests.get(url, headers=header)
     data = pd.read_csv(StringIO(res.text),sep=",")
+
     data.loc[0, 'Dia'] = datetime.strptime(data['Dia'][0], ' %Y-%m-%d').strftime("%Y-%m-%d") #le saca el espacio
+    return data
+    
+
+def actualizar_datos(data):
+    historico = pd.read_csv('data.csv')
+    
+    mover = [('Delta_Confirmados','Confirmados'),
+             ('Delta_Muertos','Muertos'),
+             ('Delta_Recuperados','Recuperados')]
+    
+    data.insert(len(data.columns),'Activos',0)
+
+    for (delta,categoria) in mover:
+        data.insert(len(data.columns),delta,data[categoria][0])
+
+    sumar = ['Confirmados','Muertos','Recuperados']
+    ult_pos = len(historico)-1
+    
+    for categoria in sumar:
+        data.loc[0,categoria] = historico[categoria][ult_pos]+data[categoria][0]
+
+    data.loc[0,'Activos'] = historico['Confirmados'][ult_pos]-data['Muertos'][0]-data['Recuperados'][0]
+    
     data.to_csv("data.csv", mode='a', header=False, index=False)
+
+
+
+data = obtener_daily()
+actualizar_datos(data)
+graficar()
