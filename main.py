@@ -64,7 +64,9 @@ def graficar():
     # Afina los bordes    
     fig.tight_layout()
     
-    plt.savefig("test.png")
+    nombre = archivo['Dia'][len(archivo)-1]+"infectados"+".png"
+    
+    plt.savefig(nombre)
     
     
 def obtener_daily():
