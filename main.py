@@ -22,7 +22,7 @@ def funcion(x,a,b):
     return a*np.exp(b*x)
 
 def graficar():
-    archivo=pd.read_csv('data.csv')
+    archivo=pd.read_csv('/home/ideascomar/public_html/bots/python/covid-19/data.csv')
 
     dias = archivo['Dia'].values
     
@@ -82,7 +82,7 @@ def obtener_daily():
     
 
 def actualizar_datos(data):
-    historico = pd.read_csv('data.csv')
+    historico = pd.read_csv('/home/ideascomar/public_html/bots/python/covid-19/data.csv')
     
     mover = [('Delta_Confirmados','Confirmados'),
              ('Delta_Muertos','Muertos'),
@@ -101,7 +101,7 @@ def actualizar_datos(data):
 
     data.loc[0,'Activos'] = historico['Confirmados'][ult_pos]-data['Muertos'][0]-data['Recuperados'][0]
     
-    data.to_csv("data.csv", mode='a', header=False, index=False)
+    data.to_csv("/home/ideascomar/public_html/bots/python/covid-19/data.csv", mode='a', header=False, index=False)
 
 
 
