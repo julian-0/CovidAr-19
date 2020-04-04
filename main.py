@@ -28,7 +28,7 @@ def funcion(x,a,b):
     '''Modelo exponencial'''
     return a*np.exp(b*x)
 
-def graficar():
+def graficar(categoria,color,titulo):
     archivo=pd.read_csv(abs_path_data)
 
     dias = archivo['Dia'].values
@@ -36,11 +36,11 @@ def graficar():
     # Convierte string en datetime
     xdat = [datetime.strptime(d, "%Y-%m-%d") for d in dias]
 
-    ydat= archivo['Delta_Confirmados'].values
+    ydat= archivo[categoria].values
     
     # Dibuja
     fig, ax = plt.subplots()
-    ax.plot(xdat, ydat,'ro', mew=1, linestyle='solid')
+    ax.plot(xdat, ydat,color+'o', mew=1, linestyle='solid')
     
     # Rota los ticks
     fig.autofmt_xdate()
@@ -54,9 +54,9 @@ def graficar():
     ax.xaxis.set_major_locator(locator)
     
  
-    ax.set(title='COVID-19 en Argentina',
-           xlabel='Dia',
-           ylabel='Casos Positivos')
+    ax.set(title=titulo,
+           xlabel='Día',
+           ylabel='Cantidad')
     
     # Agrega el cuadriculado
     ax.grid()
@@ -72,7 +72,8 @@ def graficar():
     fig.tight_layout()
     
     hoy = datetime.today().strftime("%Y-%m-%d")
-    nombre = os.path.join(script_dir, hoy+"infectados"+formatoImg)
+
+    nombre = os.path.join(script_dir, hoy+categoria.lower()+formatoImg)
     
     plt.savefig(nombre)
     
@@ -120,5 +121,33 @@ def actualizar_datos(data):
 
 data = obtener_daily()
 actualizar_datos(data)
-graficar()
+
+graficar(categoria='Delta_Confirmados',
+         color='r',
+         titulo='Nuevos infectados')
+
+graficar(categoria='Delta_Recuperados',
+         color='g',
+         titulo='Nuevos recuperados')
+
+graficar(categoria='Delta_Muertos',
+         color='m',
+         titulo='Nuevos muertos')
+
+graficar(categoria='Activos',
+         color='c',
+         titulo='Casos activos')
+
+graficar(categoria='Confirmados',
+         color='r',
+         titulo='Total infectados')
+
+graficar(categoria='Recuperados',
+         color='g',
+         titulo='Total recuperados')
+
+graficar(categoria='Muertos',
+         color='m',
+         titulo='Total muertos')
+
 print("Script finalizado")
