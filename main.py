@@ -64,7 +64,7 @@ def graficar():
     # Afina los bordes    
     fig.tight_layout()
     
-    nombre = archivo['Dia'][len(archivo)-1]+"infectados"+".png"
+    nombre = "/home/ideascomar/public_html/bots/python/covid-19/"+archivo['Dia'][len(archivo)-1]+"infectados"+".png"
     
     plt.savefig(nombre)
     
