@@ -11,10 +11,17 @@ from matplotlib import dates as mpl_dates
 from datetime import datetime
 import requests
 from io import StringIO
+import os
 
 FRECUENCIA = 2
 url='https://bots.lucasmercado.ar/json/covid-19/daily-arg.csv'
 #url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/01-22-2020.csv'
+
+script_dir = os.path.dirname(__file__)
+rel_path = "data.csv"
+abs_path_data = os.path.join(script_dir, rel_path)
+
+formatoImg = ".png"
 
 #ae^bx
 def funcion(x,a,b):
@@ -22,7 +29,7 @@ def funcion(x,a,b):
     return a*np.exp(b*x)
 
 def graficar():
-    archivo=pd.read_csv('/home/ideascomar/public_html/bots/python/covid-19/data.csv')
+    archivo=pd.read_csv(abs_path_data)
 
     dias = archivo['Dia'].values
     
@@ -64,7 +71,8 @@ def graficar():
     # Afina los bordes    
     fig.tight_layout()
     
-    nombre = "/home/ideascomar/public_html/bots/python/covid-19/"+archivo['Dia'][len(archivo)-1]+"infectados"+".png"
+    hoy = datetime.today().strftime("%Y-%m-%d")
+    nombre = os.path.join(script_dir, hoy+"infectados"+formatoImg)
     
     plt.savefig(nombre)
     
@@ -82,29 +90,35 @@ def obtener_daily():
     
 
 def actualizar_datos(data):
-    historico = pd.read_csv('/home/ideascomar/public_html/bots/python/covid-19/data.csv')
+    historico = pd.read_csv(abs_path_data)
     
-    mover = [('Delta_Confirmados','Confirmados'),
-             ('Delta_Muertos','Muertos'),
-             ('Delta_Recuperados','Recuperados')]
+    if data['Dia'][0]!=historico['Dia'][len(historico)-1]:
     
-    data.insert(len(data.columns),'Activos',0)
-
-    for (delta,categoria) in mover:
-        data.insert(len(data.columns),delta,data[categoria][0])
-
-    sumar = ['Confirmados','Muertos','Recuperados']
-    ult_pos = len(historico)-1
+        mover = [('Delta_Confirmados','Confirmados'),
+                 ('Delta_Muertos','Muertos'),
+                 ('Delta_Recuperados','Recuperados')]
+        
+        data.insert(len(data.columns),'Activos',0)
     
-    for categoria in sumar:
-        data.loc[0,categoria] = historico[categoria][ult_pos]+data[categoria][0]
-
-    data.loc[0,'Activos'] = historico['Confirmados'][ult_pos]-data['Muertos'][0]-data['Recuperados'][0]
+        for (delta,categoria) in mover:
+            data.insert(len(data.columns),delta,data[categoria][0])
     
-    data.to_csv("/home/ideascomar/public_html/bots/python/covid-19/data.csv", mode='a', header=False, index=False)
+        sumar = ['Confirmados','Muertos','Recuperados']
+        ult_pos = len(historico)-1
+        
+        for categoria in sumar:
+            data.loc[0,categoria] = historico[categoria][ult_pos]+data[categoria][0]
+    
+        data.loc[0,'Activos'] = historico['Confirmados'][ult_pos]-data['Muertos'][0]-data['Recuperados'][0]
+        
+        data.to_csv(abs_path_data, mode='a', header=False, index=False)
+    
+    else:
+        print("Los datos del dia "+ data['Dia'][0] + " ya estan almacenados")
 
 
 
 data = obtener_daily()
 actualizar_datos(data)
 graficar()
+print("Script finalizado")
