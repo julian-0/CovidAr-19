@@ -13,14 +13,13 @@ import requests
 from io import StringIO
 import os
 
-FRECUENCIA = 2
 url='https://bots.lucasmercado.ar/json/covid-19/daily-arg.csv'
 #url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/01-22-2020.csv'
 
 script_dir = os.path.dirname(__file__)
 rel_path = "data.csv"
 abs_path_data = os.path.join(script_dir, rel_path)
-
+cant_ticks=14
 formatoImg = ".png"
 
 #ae^bx
@@ -65,8 +64,9 @@ def graficar(categoria,color,titulo):
     ax.set_xlim(xmin=xdat[0])
     ax.set_xlim(xmax=xdat[-1])
     
-    # Frecuencia de dias que muestra
-    ax.set_xticks(ax.get_xticks()[::FRECUENCIA])
+    # Salto de dias que muestra
+    salto = int(len(archivo)/cant_ticks)
+    ax.set_xticks(ax.get_xticks()[::salto])
 
     # Afina los bordes    
     fig.tight_layout()
