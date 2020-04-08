@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import dates as mpl_dates
 from datetime import datetime
+from datetime import timedelta
 import requests
 from io import StringIO
 import os
@@ -88,18 +89,27 @@ def obtener_daily():
 
     data.loc[0, 'Dia'] = datetime.strptime(data['Dia'][0], ' %Y-%m-%d').strftime("%Y-%m-%d") #le saca el espacio
     return data
+
+
+# Revisa que el dia nuevo sea el dia siguiente al ultimo del historico
+def chequear_fecha(data,historico):
+    dia_nuevo = datetime.strptime(data['Dia'][0], '%Y-%m-%d')
+    historico_mas_1 = datetime.strptime(historico['Dia'][len(historico)-1], '%Y-%m-%d')+timedelta(days=1)
+    
+    return dia_nuevo.date()==historico_mas_1.date()
     
 
 def actualizar_datos(data):
     historico = pd.read_csv(abs_path_data)
     
-    if data['Dia'][0]!=historico['Dia'][len(historico)-1]:
+    if chequear_fecha(data, historico):
     
         mover = [('Delta_Confirmados','Confirmados'),
-                 ('Delta_Muertos','Muertos'),
-                 ('Delta_Recuperados','Recuperados')]
+                 ('Delta_Recuperados','Recuperados'),
+                 ('Delta_Muertos','Muertos')]
         
         data.insert(len(data.columns),'Activos',0)
+        
     
         for (delta,categoria) in mover:
             data.insert(len(data.columns),delta,data[categoria][0])
@@ -109,13 +119,13 @@ def actualizar_datos(data):
         
         for categoria in sumar:
             data.loc[0,categoria] = historico[categoria][ult_pos]+data[categoria][0]
-    
-        data.loc[0,'Activos'] = historico['Confirmados'][ult_pos]-data['Muertos'][0]-data['Recuperados'][0]
         
+        data.loc[0,'Activos'] = historico['Activos'][ult_pos]+data['Delta_Confirmados'][0]-data['Delta_Muertos'][0]-data['Delta_Recuperados'][0]
+                
         data.to_csv(abs_path_data, mode='a', header=False, index=False)
     
     else:
-        print("Los datos del dia "+ data['Dia'][0] + " ya estan almacenados")
+        print("Error, no se deben agregar datos del dia "+ data['Dia'][0])
 
 
 
@@ -123,31 +133,31 @@ data = obtener_daily()
 actualizar_datos(data)
 
 graficar(categoria='Delta_Confirmados',
-         color='r',
-         titulo='Nuevos infectados')
+          color='r',
+          titulo='Nuevos infectados')
 
 graficar(categoria='Delta_Recuperados',
-         color='g',
-         titulo='Nuevos recuperados')
+          color='g',
+          titulo='Nuevos recuperados')
 
 graficar(categoria='Delta_Muertos',
-         color='m',
-         titulo='Nuevos muertos')
+          color='m',
+          titulo='Nuevos muertos')
 
 graficar(categoria='Activos',
-         color='c',
-         titulo='Casos activos')
+          color='c',
+          titulo='Casos activos')
 
 graficar(categoria='Confirmados',
-         color='r',
-         titulo='Total infectados')
+          color='r',
+          titulo='Total infectados')
 
 graficar(categoria='Recuperados',
-         color='g',
-         titulo='Total recuperados')
+          color='g',
+          titulo='Total recuperados')
 
 graficar(categoria='Muertos',
-         color='m',
-         titulo='Total muertos')
+          color='m',
+          titulo='Total muertos')
 
 print("Script finalizado")
